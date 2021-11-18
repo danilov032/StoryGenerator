@@ -49,4 +49,24 @@ enum class Categories {
         STATUSES -> 8
         STATUSES18 -> 18
     }
+
+    companion object{
+        fun getClassEnum(id: Int): Categories = when (id) {
+            1 -> ANECDOTE
+            11 -> ANECDOTE18
+            2 -> STORIES
+            12 -> STORIES18
+            3 -> RHYMES
+            13 -> RHYMES18
+            4 -> APHORISMS
+            14 -> APHORISMS18
+            5 -> QUOTES
+            15 -> QUOTES18
+            6 -> TOASTS
+            16 -> TOASTS18
+            7 -> STATUSES
+            17 -> STATUSES18
+            else ->ANECDOTE
+        }
+    }
 }

@@ -9,5 +9,5 @@ import moxy.viewstate.strategy.StateStrategyType
 interface MainListContractsView: MvpView {
     fun showContents(listCategory: List<Categories>)
 
-    fun openCurrentContent(category: Categories)
+    fun openCurrentContent(category: Categories, statusGetData: Boolean)
 }

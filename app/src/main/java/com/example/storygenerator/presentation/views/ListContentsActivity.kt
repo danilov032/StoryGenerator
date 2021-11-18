@@ -16,6 +16,11 @@ import moxy.MvpAppCompatActivity
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import javax.inject.Inject
+import android.view.View
+
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.android.synthetic.main.dialog.*
+
 
 class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  {
     @Inject
@@ -27,7 +32,7 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
     @ProvidePresenter
     fun providePresenter(): ListContentsPresenter {
         DaggerAppComponent.builder()
-            .appModule(AppModule())
+            .appModule(AppModule(application))
             .build()
             .injectListContentsActivity(this)
 
@@ -46,13 +51,38 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
         }
 
         val category = intent.getSerializableExtra("category") as Categories
+        val statusGetData = intent.getSerializableExtra("statusGetData") as Boolean
 
         this.title = category.getNameCategory()
 
-        presenter.onStartActivity(category.getId())
+        presenter.onStartActivity(category.getId(), statusGetData)
     }
 
     override fun showContents(listContent: List<Content>) {
         customAdapter.updateItems(listContent)
     }
+
+    override fun showDialog() {
+        val dialog = BottomSheetDialog(this@ListContentsActivity)
+        dialog.setContentView(R.layout.dialog)
+        dialog.setCanceledOnTouchOutside(false)
+
+        dialog.btn_close.setOnClickListener { dialog.dismiss() }
+        dialog.btn_repeat.setOnClickListener { presenter.repeatData() }
+        dialog.show()
+    }
+
+    override fun showProgressBar() {
+        progressBar.visibility = View.VISIBLE
+    }
+
+    override fun hideProgressBar() {
+        progressBar.visibility = View.GONE
+    }
+
+    override fun onBackPressed() {
+        presenter.clickBack()
+        super.onBackPressed()
+    }
+
 }

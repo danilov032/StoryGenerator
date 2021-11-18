@@ -3,11 +3,9 @@ package com.example.storygenerator.presentation.views
 import android.content.Intent
 import android.os.Bundle
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.storygenerator.R
 import com.example.storygenerator.di.AppModule
 import com.example.storygenerator.di.DaggerAppComponent
-import com.example.storygenerator.domain.modeles.Content
 import com.example.storygenerator.presentation.adapters.AdapterCategories
 import com.example.storygenerator.presentation.contracts.MainListContractsView
 import com.example.storygenerator.presentation.presenters.MainListPresenter
@@ -28,7 +26,7 @@ class MainListCategoriesActivity : MvpAppCompatActivity(), MainListContractsView
     @ProvidePresenter
     fun providePresenter(): MainListPresenter {
         DaggerAppComponent.builder()
-            .appModule(AppModule())
+            .appModule(AppModule(application))
             .build()
             .injectMainListCategoriesActivity(this)
 
@@ -47,15 +45,18 @@ class MainListCategoriesActivity : MvpAppCompatActivity(), MainListContractsView
             layoutManager = GridLayoutManager(applicationContext,2)
             adapter = customAdapter
         }
+
+        presenter.startActivity()
     }
 
     override fun showContents(listCategory: List<Categories>) {
         customAdapter.updateItems(listCategory)
     }
 
-    override fun openCurrentContent(category: Categories) {
+    override fun openCurrentContent(category: Categories, statusGetData: Boolean) {
         val intent = Intent(this, ListContentsActivity::class.java)
         intent.putExtra("category",category)
+        intent.putExtra("statusGetData",statusGetData)
         startActivity(intent)
     }
 }

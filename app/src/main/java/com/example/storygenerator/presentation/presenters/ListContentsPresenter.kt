@@ -1,11 +1,11 @@
 package com.example.storygenerator.presentation.presenters
 
-import android.annotation.SuppressLint
 import android.util.Log
 import com.example.storygenerator.domain.interactors.Interactor
 import com.example.storygenerator.domain.modeles.Content
 import com.example.storygenerator.presentation.contracts.ListContentsContractsView
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import moxy.InjectViewState
@@ -13,54 +13,100 @@ import moxy.MvpPresenter
 import javax.inject.Inject
 
 @InjectViewState
-class ListContentsPresenter @Inject constructor(private val interactor: Interactor): MvpPresenter<ListContentsContractsView>() {
+class ListContentsPresenter @Inject constructor(private val interactor: Interactor) :
+    MvpPresenter<ListContentsContractsView>() {
+    private val disposable = CompositeDisposable()
     var count = 10
     private var subject: BehaviorSubject<Int> = BehaviorSubject.createDefault(count)
     private val list = mutableListOf<String>()
     private var idCategory: Int = 1
 
-    fun onStartActivity(id: Int){
+    fun onStartActivity(id: Int, statusGetData: Boolean) {
         idCategory = id
-        createSubject()
+        viewState.showProgressBar()
+        if(statusGetData){
+            disposable.add(
+                interactor.getContentsWithBD()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ content ->
+                        viewState.hideProgressBar()
+                        viewState.showContents(content)
+                    },{
+                        Log.d("AAA", it.message.toString())
+                    })
+            )
+        }
+        else{
+            createSubject()
+        }
     }
 
-    @SuppressLint("CheckResult")
-    fun getData(){
-        interactor.getContent(idCategory)
+    override fun onDestroy() {
+        disposable.clear()
+        super.onDestroy()
+    }
+
+    fun repeatData(){
+        getData()
+    }
+
+    fun clickBack(){
+        disposable.add(
+            interactor.deleteAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                },{
+                    Log.d("AAA", it.message.toString())
+                })
+        )
+    }
+
+    private fun getData() {
+        disposable.add(interactor.getContent(idCategory)
             .retry(3)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ item ->
-                Log.d("AAA", count.toString())
                 list.add(item.content)
                 count--
                 subject.onNext(count)
             }, {
-                count--
-                Log.d("AAA", it.message.toString())
-                subject.onNext(count)
+               viewState.showDialog()
             })
+        )
     }
 
-    @SuppressLint("CheckResult")
-    fun createSubject(){
-        subject
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ count ->
-                if (count > 0) getData()
-                else dela()
-            }, {
-
-            })
+    private fun createSubject() {
+        disposable.add(
+            subject
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ count ->
+                    if (count > 0) getData()
+                    else showContent()
+                }, {
+                    viewState.showDialog()
+                })
+        )
     }
 
-    fun dela(){
-        Log.d("AAA", list.size.toString())
-        Log.d("AAA", "data")
-        val list1 = list.map {
-            Content(it)
+    private fun showContent() {
+
+        val listContent = list.map {
+            Content(idCategory, it)
         }
-        viewState.showContents(list1)
+        disposable.add(
+            interactor.insertContents(listContent)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                },{
+                    Log.d("AAA", it.message.toString())
+                })
+        )
+        viewState.hideProgressBar()
+        viewState.showContents(listContent)
     }
 }

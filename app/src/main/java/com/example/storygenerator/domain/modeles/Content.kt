@@ -1,3 +1,3 @@
 package com.example.storygenerator.domain.modeles
 
-data class Content (val content: String)
+data class Content (val idCategory: Int, val content: String)
