@@ -7,11 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".presentation.views.MainListCategoriesActivity"
     android:background="#ffe57f"
-    android:id="@+id/container">
+    android:id="@+id/container"
+    >
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCategories"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

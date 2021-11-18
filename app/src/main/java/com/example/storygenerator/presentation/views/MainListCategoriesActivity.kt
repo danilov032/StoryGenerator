@@ -2,6 +2,8 @@ package com.example.storygenerator.presentation.views
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.storygenerator.R
 import com.example.storygenerator.di.AppModule
@@ -45,11 +47,15 @@ class MainListCategoriesActivity : MvpAppCompatActivity(), MainListContractsView
             layoutManager = GridLayoutManager(applicationContext,2)
             adapter = customAdapter
         }
+    }
 
+    override fun onStart() {
         presenter.startActivity()
+        super.onStart()
     }
 
     override fun showContents(listCategory: List<Categories>) {
+        recyclerCategories.isVisible = true
         customAdapter.updateItems(listCategory)
     }
 

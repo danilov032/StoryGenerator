@@ -14,10 +14,6 @@ import javax.inject.Inject
 @InjectViewState
 class MainListPresenter @Inject constructor(private val interactor: Interactor): MvpPresenter<MainListContractsView>()  {
     private val disposable = CompositeDisposable()
-    override fun attachView(view: MainListContractsView?) {
-        super.attachView(view)
-        viewState.showContents(Categories.values().toList())
-    }
 
     fun onClickCategory(category: Categories){
         viewState.openCurrentContent(category, false)
@@ -33,7 +29,10 @@ class MainListPresenter @Inject constructor(private val interactor: Interactor):
                         Log.d("AAA", contents.size.toString())
                         viewState.openCurrentContent(Categories.getClassEnum(contents[0].idCategory), true)
                     }
-                    Log.d("AAA", "пусто")
+                    else{
+                        viewState.showContents(Categories.values().toList())
+                        Log.d("AAA", "пусто")
+                    }
                 }, {
                     Log.d("AAA", it.message.toString())
                 })
