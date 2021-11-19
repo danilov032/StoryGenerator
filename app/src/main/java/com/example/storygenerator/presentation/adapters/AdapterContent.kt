@@ -17,7 +17,7 @@ class AdapterContent: RecyclerView.Adapter<ContentHolder>() {
     }
 
     override fun onBindViewHolder(holder: ContentHolder, position: Int) {
-        holder.bindItems(items[position], position)
+        holder.bindItems(items[position])
     }
 
     override fun getItemCount(): Int {
