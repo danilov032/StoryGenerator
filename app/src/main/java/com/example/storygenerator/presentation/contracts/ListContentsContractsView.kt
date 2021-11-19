@@ -15,4 +15,6 @@ interface ListContentsContractsView: MvpView {
     fun showProgressBar()
 
     fun hideProgressBar()
+
+    fun addDataRecycler(listContent: List<Content>)
 }

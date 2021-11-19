@@ -20,6 +20,7 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
     private var subject: BehaviorSubject<Int> = BehaviorSubject.createDefault(count)
     private val list = mutableListOf<String>()
     private var idCategory: Int = 1
+    private var loading: Boolean = false
 
     fun onStartActivity(id: Int, statusGetData: Boolean) {
         idCategory = id
@@ -63,6 +64,19 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
         )
     }
 
+    fun updateData(){
+        if (!loading ) {
+            loading = true
+            Log.d("AAA","Подгрузили новый список")
+            count = 10
+            list.clear()
+            subject = BehaviorSubject.createDefault(count)
+            viewState.showDialog()
+            viewState.showProgressBar()
+            createSubject()
+        }
+    }
+
     private fun getData() {
         disposable.add(interactor.getContent(idCategory)
             .retry(3)
@@ -85,15 +99,39 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ count ->
                     if (count > 0) getData()
-                    else showContent()
+                    else {
+                        if(loading) addContent()
+                        else showContent()
+                        loading = false
+                        Log.d("AAA","Загрузили пачку ")
+                    }
                 }, {
                     viewState.showDialog()
                 })
         )
     }
 
-    private fun showContent() {
+    private fun addContent() {
+        clickBack()
+        val listContent = list.map {
+            Content(idCategory, it)
+        }
 
+        disposable.add(
+            interactor.insertContents(listContent)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.d("AAA", "addContent")
+                },{
+                    Log.d("AAA", it.message.toString())
+                })
+        )
+        viewState.hideProgressBar()
+        viewState.addDataRecycler(listContent)
+    }
+
+    private fun showContent() {
         val listContent = list.map {
             Content(idCategory, it)
         }
@@ -102,6 +140,7 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
+                    Log.d("AAA", "showContent")
                 },{
                     Log.d("AAA", it.message.toString())
                 })

@@ -1,6 +1,7 @@
 package com.example.storygenerator.presentation.views
 
 import android.os.Bundle
+import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.storygenerator.R
 import com.example.storygenerator.di.AppModule
@@ -20,7 +21,7 @@ import android.view.View
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.dialog.*
-
+import androidx.recyclerview.widget.RecyclerView
 
 class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  {
     @Inject
@@ -45,8 +46,9 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_list_contents)
 
+        val layoutManagerForAdapter = LinearLayoutManager(this@ListContentsActivity)
         recyclerContent.apply {
-            layoutManager = LinearLayoutManager(this@ListContentsActivity)
+            layoutManager = layoutManagerForAdapter
             adapter = customAdapter
         }
 
@@ -56,6 +58,18 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
         this.title = category.getNameCategory()
 
         presenter.onStartActivity(category.getId(), statusGetData)
+
+        recyclerContent.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                val lastVisibleItemPosition: Int = layoutManagerForAdapter.findLastVisibleItemPosition()
+                if (lastVisibleItemPosition == customAdapter.itemCount - 1) {
+                    Log.d("AAA", "Обновить")
+                    presenter.updateData()
+
+                }
+            }
+        })
     }
 
     override fun showContents(listContent: List<Content>) {
@@ -65,10 +79,11 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
     override fun showDialog() {
         val dialog = BottomSheetDialog(this@ListContentsActivity)
         dialog.setContentView(R.layout.dialog)
-        dialog.setCanceledOnTouchOutside(false)
 
-        dialog.btn_close.setOnClickListener { dialog.dismiss() }
-        dialog.btn_repeat.setOnClickListener { presenter.repeatData() }
+        dialog.btn_repeat.setOnClickListener {
+            presenter.repeatData()
+            dialog.dismiss()
+        }
         dialog.show()
     }
 
@@ -78,6 +93,10 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
 
     override fun hideProgressBar() {
         progressBar.visibility = View.GONE
+    }
+
+    override fun addDataRecycler(listContent: List<Content>) {
+        customAdapter.addItems(listContent)
     }
 
     override fun onBackPressed() {

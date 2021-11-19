@@ -17,7 +17,7 @@ class AdapterContent: RecyclerView.Adapter<ContentHolder>() {
     }
 
     override fun onBindViewHolder(holder: ContentHolder, position: Int) {
-        holder.bindItems(items[position])
+        holder.bindItems(items[position], position)
     }
 
     override fun getItemCount(): Int {
@@ -26,6 +26,11 @@ class AdapterContent: RecyclerView.Adapter<ContentHolder>() {
 
     fun updateItems(list: List<Content>) {
         items.clear()
+        items.addAll(list)
+        notifyDataSetChanged()
+    }
+
+    fun addItems(list: List<Content>) {
         items.addAll(list)
         notifyDataSetChanged()
     }
