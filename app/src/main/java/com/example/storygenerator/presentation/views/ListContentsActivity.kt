@@ -1,8 +1,10 @@
 package com.example.storygenerator.presentation.views
 
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.storygenerator.R
 import com.example.storygenerator.di.AppModule
 import com.example.storygenerator.di.DaggerAppComponent
@@ -11,17 +13,14 @@ import com.example.storygenerator.presentation.adapters.AdapterContent
 import com.example.storygenerator.presentation.contracts.ListContentsContractsView
 import com.example.storygenerator.presentation.presenters.ListContentsPresenter
 import com.example.storygenerator.presentation.utils.Categories
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.android.synthetic.main.activity_list_contents.*
+import kotlinx.android.synthetic.main.dialog.*
 import kotlinx.android.synthetic.main.main_list_categories.*
 import moxy.MvpAppCompatActivity
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import javax.inject.Inject
-import android.view.View
-
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.android.synthetic.main.dialog.*
-import androidx.recyclerview.widget.RecyclerView
 
 class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  {
     @Inject
@@ -64,7 +63,6 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
                 super.onScrollStateChanged(recyclerView, newState)
                 val lastVisibleItemPosition: Int = layoutManagerForAdapter.findLastVisibleItemPosition()
                 if (lastVisibleItemPosition == customAdapter.itemCount - 1) {
-                    Log.d("AAA", "Обновить")
                     presenter.updateData()
 
                 }
@@ -99,9 +97,12 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
         customAdapter.addItems(listContent)
     }
 
+    override fun showErrorMessage() {
+        Toast.makeText(applicationContext, getString(R.string.error_message), Toast.LENGTH_SHORT).show()
+    }
+
     override fun onBackPressed() {
         presenter.clickBack()
         super.onBackPressed()
     }
-
 }

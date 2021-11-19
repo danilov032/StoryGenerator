@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">StoryGenerator</string>
+    <string name="error_message">Неизвестная ошибка</string>
 </resources>

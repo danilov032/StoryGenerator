@@ -1,6 +1,5 @@
 package com.example.storygenerator.presentation.presenters
 
-import android.util.Log
 import com.example.storygenerator.domain.interactors.Interactor
 import com.example.storygenerator.presentation.contracts.MainListContractsView
 import com.example.storygenerator.presentation.utils.Categories
@@ -26,15 +25,13 @@ class MainListPresenter @Inject constructor(private val interactor: Interactor):
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ contents ->
                     if(contents.isNotEmpty()){
-                        Log.d("AAA", contents.size.toString())
                         viewState.openCurrentContent(Categories.getClassEnum(contents[0].idCategory), true)
                     }
                     else{
                         viewState.showContents(Categories.values().toList())
-                        Log.d("AAA", "пусто")
                     }
                 }, {
-                    Log.d("AAA", it.message.toString())
+                    viewState.showErrorMessage()
                 })
         )
     }

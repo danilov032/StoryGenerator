@@ -1,6 +1,5 @@
 package com.example.storygenerator.presentation.presenters
 
-import android.util.Log
 import com.example.storygenerator.domain.interactors.Interactor
 import com.example.storygenerator.domain.modeles.Content
 import com.example.storygenerator.presentation.contracts.ListContentsContractsView
@@ -25,7 +24,7 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
     fun onStartActivity(id: Int, statusGetData: Boolean) {
         idCategory = id
         viewState.showProgressBar()
-        if(statusGetData){
+        if (statusGetData) {
             disposable.add(
                 interactor.getContentsWithBD()
                     .subscribeOn(Schedulers.io())
@@ -33,12 +32,11 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
                     .subscribe({ content ->
                         viewState.hideProgressBar()
                         viewState.showContents(content)
-                    },{
-                        Log.d("AAA", it.message.toString())
+                    }, {
+                        viewState.showErrorMessage()
                     })
             )
-        }
-        else{
+        } else {
             createSubject()
         }
     }
@@ -48,26 +46,25 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
         super.onDestroy()
     }
 
-    fun repeatData(){
+    fun repeatData() {
         getData()
     }
 
-    fun clickBack(){
+    fun clickBack() {
         disposable.add(
             interactor.deleteAll()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                },{
-                    Log.d("AAA", it.message.toString())
+                }, {
+                    viewState.showErrorMessage()
                 })
         )
     }
 
-    fun updateData(){
-        if (!loading ) {
+    fun updateData() {
+        if (!loading) {
             loading = true
-            Log.d("AAA","Подгрузили новый список")
             count = 10
             list.clear()
             subject = BehaviorSubject.createDefault(count)
@@ -77,17 +74,18 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
     }
 
     private fun getData() {
-        disposable.add(interactor.getContent(idCategory)
-            .retry(3)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ item ->
-                list.add(item.content)
-                count--
-                subject.onNext(count)
-            }, {
-               viewState.showDialog()
-            })
+        disposable.add(
+            interactor.getContent(idCategory)
+                .retry(3)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ item ->
+                    list.add(item.content)
+                    count--
+                    subject.onNext(count)
+                }, {
+                    viewState.showDialog()
+                })
         )
     }
 
@@ -99,10 +97,9 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
                 .subscribe({ count ->
                     if (count > 0) getData()
                     else {
-                        if(loading) addContent()
+                        if (loading) addContent()
                         else showContent()
                         loading = false
-                        Log.d("AAA","Загрузили пачку ")
                     }
                 }, {
                     viewState.showDialog()
@@ -121,9 +118,8 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Log.d("AAA", "addContent")
-                },{
-                    Log.d("AAA", it.message.toString())
+                }, {
+                    viewState.showErrorMessage()
                 })
         )
         viewState.hideProgressBar()
@@ -139,9 +135,8 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Log.d("AAA", "showContent")
-                },{
-                    Log.d("AAA", it.message.toString())
+                }, {
+                    viewState.showErrorMessage()
                 })
         )
         viewState.hideProgressBar()

@@ -3,6 +3,7 @@ package com.example.storygenerator.presentation.views
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.storygenerator.R
@@ -64,5 +65,9 @@ class MainListCategoriesActivity : MvpAppCompatActivity(), MainListContractsView
         intent.putExtra("category",category)
         intent.putExtra("statusGetData",statusGetData)
         startActivity(intent)
+    }
+
+    override fun showErrorMessage() {
+        Toast.makeText(applicationContext, getString(R.string.error_message), Toast.LENGTH_SHORT).show()
     }
 }
