@@ -71,7 +71,6 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
             count = 10
             list.clear()
             subject = BehaviorSubject.createDefault(count)
-            viewState.showDialog()
             viewState.showProgressBar()
             createSubject()
         }
