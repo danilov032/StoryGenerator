@@ -2,28 +2,33 @@ package com.example.storygenerator.presentation.views
 
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.storygenerator.R
 import com.example.storygenerator.di.AppModule
 import com.example.storygenerator.di.DaggerAppComponent
 import com.example.storygenerator.domain.modeles.Content
+import com.example.storygenerator.presentation.OnBackPressed
 import com.example.storygenerator.presentation.adapters.AdapterContent
 import com.example.storygenerator.presentation.contracts.ListContentsContractsView
 import com.example.storygenerator.presentation.presenters.ListContentsPresenter
 import com.example.storygenerator.presentation.utils.Categories
-import kotlinx.android.synthetic.main.activity_list_contents.*
-import kotlinx.android.synthetic.main.main_list_categories.*
-import moxy.MvpAppCompatActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.android.synthetic.main.dialog.*
+import kotlinx.android.synthetic.main.fragment_list_contents.*
+import moxy.MvpAppCompatFragment
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import javax.inject.Inject
-import android.view.View
 
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.android.synthetic.main.dialog.*
-import androidx.recyclerview.widget.RecyclerView
+private const val CATEGORY = "categoryId"
+private const val STATUS = "statusGetData"
 
-class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  {
+class ListContentsFragment : MvpAppCompatFragment(), ListContentsContractsView, OnBackPressed {
     @Inject
     lateinit var presenterLazy: dagger.Lazy<ListContentsPresenter>
 
@@ -33,36 +38,51 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
     @ProvidePresenter
     fun providePresenter(): ListContentsPresenter {
         DaggerAppComponent.builder()
-            .appModule(AppModule(application))
+            .appModule(AppModule(requireActivity().application))
             .build()
-            .injectListContentsActivity(this)
+            .injectListContentsFragment(this)
 
         return presenterLazy.get()
     }
 
-    private val customAdapter: AdapterContent by lazy { AdapterContent () }
+    private val customAdapter: AdapterContent by lazy { AdapterContent() }
+
+    private var category: Int = 1
+    private var status: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_list_contents)
+        arguments?.let {
+            category = it.getInt(CATEGORY)
+            status = it.getBoolean(STATUS)
+        }
+    }
 
-        val layoutManagerForAdapter = LinearLayoutManager(this@ListContentsActivity)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_list_contents, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val layoutManagerForAdapter = LinearLayoutManager(requireContext())
         recyclerContent.apply {
             layoutManager = layoutManagerForAdapter
             adapter = customAdapter
         }
 
-        val category = intent.getSerializableExtra("category") as Categories
-        val statusGetData = intent.getSerializableExtra("statusGetData") as Boolean
+        requireActivity().title = Categories.getClassEnum(category).getNameCategory()
 
-        this.title = category.getNameCategory()
-
-        presenter.onStartActivity(category.getId(), statusGetData)
+        presenter.onStartActivity(category, status)
 
         recyclerContent.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                val lastVisibleItemPosition: Int = layoutManagerForAdapter.findLastVisibleItemPosition()
+                val lastVisibleItemPosition: Int =
+                    layoutManagerForAdapter.findLastVisibleItemPosition()
                 if (lastVisibleItemPosition == customAdapter.itemCount - 1) {
                     Log.d("AAA", "Обновить")
                     presenter.updateData()
@@ -70,6 +90,8 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
                 }
             }
         })
+
+
     }
 
     override fun showContents(listContent: List<Content>) {
@@ -77,7 +99,7 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
     }
 
     override fun showDialog() {
-        val dialog = BottomSheetDialog(this@ListContentsActivity)
+        val dialog = BottomSheetDialog(requireContext())
         dialog.setContentView(R.layout.dialog)
 
         dialog.btn_repeat.setOnClickListener {
@@ -99,9 +121,17 @@ class ListContentsActivity : MvpAppCompatActivity(), ListContentsContractsView  
         customAdapter.addItems(listContent)
     }
 
-    override fun onBackPressed() {
-        presenter.clickBack()
-        super.onBackPressed()
+    companion object {
+        fun newInstance(categoryId: Int, status: Boolean) =
+            ListContentsFragment().apply {
+                arguments = Bundle().apply {
+                    putInt(CATEGORY, categoryId)
+                    putBoolean(STATUS, status)
+                }
+            }
     }
 
+    override fun onBackPressed(){
+        presenter.clickBack()
+    }
 }

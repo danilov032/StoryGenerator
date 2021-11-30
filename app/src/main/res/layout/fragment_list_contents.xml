@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".presentation.views.ListContentsActivity"
     android:background="#ffe57f"
-    android:padding="8dp">
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerContent"

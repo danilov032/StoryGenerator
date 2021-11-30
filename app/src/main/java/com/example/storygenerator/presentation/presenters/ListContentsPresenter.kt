@@ -53,11 +53,13 @@ class ListContentsPresenter @Inject constructor(private val interactor: Interact
     }
 
     fun clickBack(){
+        val v = 4
         disposable.add(
             interactor.deleteAll()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
+                    Log.d("AAA", "")
                 },{
                     Log.d("AAA", it.message.toString())
                 })

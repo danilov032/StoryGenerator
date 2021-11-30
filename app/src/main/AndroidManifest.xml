@@ -16,7 +16,7 @@
             android:name=".presentation.views.ListContentsActivity"
             android:exported="false" />
         <activity
-            android:name=".presentation.views.MainListCategoriesActivity"
+            android:name=".presentation.views.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
